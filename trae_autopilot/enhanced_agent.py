@@ -1,17 +1,24 @@
+import subprocess
+from typing import Dict, Optional, Callable
+import asyncio
+
 from .learning.error_learner import ErrorPatternLearner
 from .mcp.protocol import MCPCoordinator, AgentMCPClient
 
-class EnhancedTraeAgent(TraeAgentWithAutopilot, AgentMCPClient):
+class EnhancedTraeAgent(AgentMCPClient):
     """增强版智能体 - 整合所有扩展功能"""
     
     def __init__(self, agent_id: str, specialty: str, model: str = "claude-3.5-sonnet", 
                  coordinator: MCPCoordinator = None):
-        # 初始化基类
-        TraeAgentWithAutopilot.__init__(self, agent_id, specialty, model)
+        # 初始化基本属性
+        self.agent_id = agent_id
+        self.specialty = specialty
+        self.model = model
+        self.current_project = None  # 简化版，实际项目中可能需要更复杂的项目管理
         
         # 初始化MCP
         self.coordinator = coordinator or MCPCoordinator()
-        AgentMCPClient.__init__(self, agent_id, self.coordinator)
+        super().__init__(agent_id, self.coordinator)
         
         # 初始化错误学习器
         self.error_learner = ErrorPatternLearner()
@@ -32,6 +39,21 @@ class EnhancedTraeAgent(TraeAgentWithAutopilot, AgentMCPClient):
             max_concurrent=3
         )
     
+    def _exec(self, cmd: str, env: Dict = None) -> 'subprocess.CompletedProcess':
+        """执行命令并返回结果"""
+        return subprocess.run(
+            cmd, 
+            shell=True, 
+            capture_output=True, 
+            text=True,
+            env=env
+        )
+    
+    def learn(self, name: str, commands: list, metadata: Dict):
+        """学习新命令"""
+        # 简化版，实际项目中可能需要更复杂的学习机制
+        pass
+    
     async def smart_execute(self, cmd: str, context: Dict = None) -> Dict:
         """智能执行 - 带错误修复和MCP协作"""
         context = context or {}
@@ -46,7 +68,7 @@ class EnhancedTraeAgent(TraeAgentWithAutopilot, AgentMCPClient):
         error_context = {
             'project_type': self.specialty,
             'file_extension': context.get('file_extension'),
-            'project_path': self.current_project.project_path if self.current_project else '.',
+            'project_path': '.',  # 简化版，使用当前目录
             **context
         }
         
