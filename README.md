@@ -39,8 +39,8 @@ pip install trae-autopilot[all]
 
 ```bash
 # 克隆项目
-git clone https://github.com/trae-project/autopilot.git
-cd autopilot
+git clone https://github.com/gaoyuanlianghua/Trae.git
+cd Trae
 
 # 安装依赖
 npm install
@@ -184,7 +184,7 @@ TRAE AutoPilot 使用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
 
 - 官方网站：https://trae.ai
 - 电子邮件：support@trae.ai
-- GitHub：https://github.com/trae-project/autopilot
+- GitHub：https://github.com/gaoyuanlianghua/Trae
 
 ---
 
