@@ -13,10 +13,16 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Setup TRAE AutoPilot
-        uses: trae-team/setup-trae@v1
-        with:
-          version: 'latest'
-          agents: 'react,nodejs,python'  # 激活的智能体
+        run: |
+          # 安装TRAE AutoPilot
+          if [ -f "setup.py" ]; then
+            pip install -e .
+          elif [ -f "package.json" ]; then
+            npm install
+          fi
+          
+          # 激活智能体
+          echo "TRAE_AGENTS=react,nodejs,python" >> $GITHUB_ENV
       
       - name: Scan Project
         id: scan
