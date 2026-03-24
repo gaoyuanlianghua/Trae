@@ -1,0 +1,87 @@
+name: TRAE AutoPilot CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  trae-intelligence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup TRAE AutoPilot
+        uses: trae-team/setup-trae@v1
+        with:
+          version: 'latest'
+          agents: 'react,nodejs,python'  # 激活的智能体
+      
+      - name: Scan Project
+        id: scan
+        run: |
+          trae-autopilot scan . --output-json > scan-result.json
+          echo "project_type=$(jq -r '.project_type' scan-result.json)" >> $GITHUB_OUTPUT
+      
+      - name: Restore Command Memory
+        uses: actions/cache@v3
+        with:
+          path: ~/.trae_autopilot
+          key: trae-memory-${{ hashFiles('**/package-lock.json', '**/requirements.txt') }}
+          restore-keys: |
+            trae-memory-
+      
+      - name: Predict & Execute Build
+        run: |
+          # 获取预测命令
+          PREDICTION=$(trae-autopilot predict --top 3)
+          echo "TRAE预测: $PREDICTION"
+          
+          # 执行高置信度预测
+          trae-autopilot exec-predicted --min-confidence 0.8
+      
+      - name: Smart Test Execution
+        run: |
+          # 只测试变更相关的文件
+          CHANGED_FILES=$(git diff --name-only HEAD~1)
+          trae-autopilot test-smart --files "$CHANGED_FILES"
+      
+      - name: Auto-Fix Issues
+        if: failure()
+        run: |
+          # 尝试自动修复
+          trae-autopilot fix --retry 3
+          # 提交修复
+          git config user.name "TRAE Bot"
+          git config user.email "trae@bot.local"
+          git add -A
+          git commit -m "🔧 TRAE自动修复" || echo "无需修复"
+      
+      - name: Save Memory
+        if: always()
+        uses: actions/cache@v3
+        with:
+          path: ~/.trae_autopilot
+          key: trae-memory-${{ github.sha }}
+
+  # 矩阵构建 - 多技术栈项目
+  matrix-build:
+    needs: trae-intelligence
+    strategy:
+      matrix:
+        include:
+          - agent: react
+            node-version: '20'
+          - agent: python
+            python-version: '3.11'
+    
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Environment
+        run: trae-autopilot setup --agent ${{ matrix.agent }}
+      
+      - name: Agent-Specific Build
+        run: trae-autopilot run-agent ${{ matrix.agent }} build

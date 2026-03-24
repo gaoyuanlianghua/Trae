@@ -1,0 +1,68 @@
+stages:
+  - trae-scan
+  - trae-predict
+  - trae-execute
+  - trae-learn
+
+variables:
+  TRAE_CACHE: "$CI_PROJECT_DIR/.trae-cache"
+
+# 缓存TRAE记忆
+.trae-cache: &trae-cache
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - ~/.trae_autopilot/
+    - .trae-cache/
+
+trae-scan:
+  stage: trae-scan
+  image: trae/autopilot:latest
+  script:
+    - trae-autopilot scan . --output-json > trae-project.json
+    - cat trae-project.json | trae-autopilot extract-gitlab-vars
+  artifacts:
+    reports:
+      dotenv: trae-vars.env
+    paths:
+      - trae-project.json
+
+trae-predict:
+  stage: trae-predict
+  image: trae/autopilot:latest
+  needs: [trae-scan]
+  script:
+    - |
+      echo "TRAE预测分析..."
+      trae-autopilot predict --format gitlab > trae-predictions.json
+      
+      # 动态生成后续作业
+      jq -r '.commands[]' trae-predictions.json | while read cmd; do
+        echo "planned_command=$cmd" >> build.env
+      done
+  artifacts:
+    reports:
+      dotenv: build.env
+
+# 动态生成的执行作业
+trae-execute:${planned_command}:
+  stage: trae-execute
+  image: trae/autopilot:latest
+  script:
+    - trae-autopilot exec "${planned_command}" --auto-fix
+  rules:
+    - if: $planned_command
+
+trae-learn-from-pipeline:
+  stage: trae-learn
+  image: trae/autopilot:latest
+  when: always
+  script:
+    - |
+      # 从本次流水线学习
+      trae-autopilot learn-pipeline \
+        --pipeline-id $CI_PIPELINE_ID \
+        --success $CI_JOB_STATUS \
+        --commands-file trae-executed.json
+  cache:
+    <<: *trae-cache
+    policy: push

@@ -1,0 +1,32 @@
+# trae-team.yaml 
+team: 
+  name: "TRAE-Core-Team" 
+  version: "1.0.0" 
+  
+agents: 
+  - id: "pm-001" 
+    role: "project_manager" 
+    model: "claude-3-opus" 
+    
+  - id: "fe-react-001" 
+    role: "frontend" 
+    specialty: "react" 
+    model: "claude-3.5-sonnet" 
+    
+  - id: "be-node-001" 
+    role: "backend" 
+    specialty: "nodejs" 
+    model: "claude-3.5-sonnet" 
+    
+  - id: "db-001" 
+    role: "database" 
+    model: "claude-3.5-sonnet" 
+    
+  - id: "devops-001" 
+    role: "devops" 
+    model: "claude-3-haiku"  # 成本优化 
+
+workflow: 
+  code_review_required: true 
+  auto_test_threshold: 80 
+  security_scan: true

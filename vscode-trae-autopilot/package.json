@@ -1,0 +1,62 @@
+{
+  "name": "vscode-trae-autopilot",
+  "displayName": "TRAE AutoPilot",
+  "description": "TRAE AutoPilot - 具备自我操控能力的AI开发团队",
+  "version": "1.0.0",
+  "publisher": "trae-project",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:traeAutopilot.start",
+    "onCommand:traeAutopilot.scanProject",
+    "onCommand:traeAutopilot.runLearned",
+    "onCommand:traeAutopilot.quickFix",
+    "onCommand:traeAutopilot.predict"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "traeAutopilot.start",
+        "title": "TRAE AutoPilot: 启动"
+      },
+      {
+        "command": "traeAutopilot.scanProject",
+        "title": "TRAE AutoPilot: 扫描项目"
+      },
+      {
+        "command": "traeAutopilot.runLearned",
+        "title": "TRAE AutoPilot: 运行已学习命令"
+      },
+      {
+        "command": "traeAutopilot.quickFix",
+        "title": "TRAE AutoPilot: 智能修复"
+      },
+      {
+        "command": "traeAutopilot.predict",
+        "title": "TRAE AutoPilot: 预测命令"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "traeAutopilot.quickFix",
+          "group": "trae"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0"
+  }
+}

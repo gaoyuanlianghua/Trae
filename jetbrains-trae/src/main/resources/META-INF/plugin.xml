@@ -1,0 +1,43 @@
+<idea-plugin>
+    <id>com.trae.autopilot</id>
+    <name>TRAE AutoPilot</name>
+    <version>1.0</version>
+    <vendor email="support@trae.ai" url="https://trae.ai">TRAE Project</vendor>
+    
+    <description><![CDATA[
+        TRAE AutoPilot - 具备自我操控能力的AI开发团队
+        
+        主要功能：
+        - 项目扫描和分析
+        - 智能命令预测
+        - 自动学习和执行命令
+        - 实时文件监控
+        - 多智能体协作
+    ]]></description>
+    
+    <change-notes><![CDATA[
+        1.0: 初始版本
+        - 实现基本的智能体管理
+        - 添加项目扫描功能
+        - 实现命令预测
+        - 集成文件监控
+    ]]></change-notes>
+    
+    <idea-version since-build="221" until-build="232.*" />
+    
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="TraeAutoPilot" anchor="right" factoryClass="com.trae.autopilot.TraeToolWindowFactory" />
+    </extensions>
+    
+    <actions>
+        <action id="TraeAutoPilot.Start" class="com.trae.autopilot.actions.StartAction" text="启动 TRAE AutoPilot" description="启动 TRAE AutoPilot 服务">
+            <add-to-group group-id="ToolsMenu" anchor="last" />
+        </action>
+        <action id="TraeAutoPilot.Scan" class="com.trae.autopilot.actions.ScanAction" text="扫描项目" description="扫描当前项目">
+            <add-to-group group-id="ToolsMenu" anchor="last" />
+        </action>
+        <action id="TraeAutoPilot.Predict" class="com.trae.autopilot.actions.PredictAction" text="预测命令" description="预测下一步命令">
+            <add-to-group group-id="ToolsMenu" anchor="last" />
+        </action>
+    </actions>
+</idea-plugin>
