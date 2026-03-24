@@ -27,8 +27,26 @@ jobs:
       - name: Scan Project
         id: scan
         run: |
+          # 执行扫描
           trae-autopilot scan . --output-json > scan-result.json
-          echo "project_type=$(jq -r '.project_type' scan-result.json)" >> $GITHUB_OUTPUT
+          
+          # 检查scan-result.json是否存在且非空
+          if [ -s scan-result.json ]; then
+            # 尝试解析project_type
+            if jq -e '.project_type' scan-result.json > /dev/null 2>&1; then
+              project_type=$(jq -r '.project_type' scan-result.json)
+              echo "project_type=$project_type" >> $GITHUB_OUTPUT
+              echo "扫描成功，项目类型: $project_type"
+            else
+              # 如果解析失败，设置默认值
+              echo "project_type=unknown" >> $GITHUB_OUTPUT
+              echo "扫描结果解析失败，设置默认项目类型"
+            fi
+          else
+            # 如果文件为空，设置默认值
+            echo "project_type=unknown" >> $GITHUB_OUTPUT
+            echo "扫描结果文件为空，设置默认项目类型"
+          fi
       
       - name: Restore Command Memory
         uses: actions/cache@v3
@@ -47,8 +65,15 @@ jobs:
       - name: Smart Test Execution
         run: |
           # 只测试变更相关的文件
-          CHANGED_FILES=$(git diff --name-only HEAD~1)
-          echo "测试变更文件: $CHANGED_FILES"
+          if git rev-parse --verify HEAD~1 > /dev/null 2>&1; then
+            # 如果存在HEAD~1，获取变更文件
+            CHANGED_FILES=$(git diff --name-only HEAD~1)
+            echo "测试变更文件: $CHANGED_FILES"
+          else
+            # 如果不存在HEAD~1，使用所有文件
+            CHANGED_FILES="$(git ls-files)"
+            echo "没有足够的历史提交，测试所有文件"
+          fi
           # 使用run命令执行测试
           trae-autopilot run test
       
